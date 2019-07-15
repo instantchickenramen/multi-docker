@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t leminh/react-test -f ./client/Dockerfile.dev ./client
+
+scripts:
+  - docker run -e CI=true leminh/react-test npm test
+
+after-success:
+  - docker build -t leminh/multi-client ./client
+  - docker build -t leminh/multi-nginx ./nginx
+  - docker build -t leminh/multi-server ./server
+  - docker build -t leminh/multi-worker ./worker
+  - echo "$DOCKER_PW" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push leminh/multi-client
+  - docker push leminh/multi-nginx
+  - docker push leminh/multi-server
+  - docker push leminh/multi-worker
